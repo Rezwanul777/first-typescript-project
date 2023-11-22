@@ -1,7 +1,7 @@
 // 1. Create an interface representing a document in MongoDB.
 export type UserName = {
   firstName: string;
-  middleName: string;
+  middleName?: string;
   lastName: string;
 };
 
@@ -35,5 +35,5 @@ export type Student = {
   guardian: Guardian;
   localGuardian: LocalGuardian;
   profileImg?: string;
-  isActive: 'active' | 'blocked';
+  isActive?: 'active' | 'blocked';
 };
