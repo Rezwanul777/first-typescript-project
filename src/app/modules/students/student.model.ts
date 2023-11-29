@@ -90,6 +90,12 @@ const localGuradianSchema = new Schema<TLocalGuardian>({
 
 const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
   id: { type: String, required: true, unique: true },
+  user:{
+   type:Schema.Types.ObjectId,
+   required:[true,'User Id is required'],
+   unique:true,
+   ref:"User"
+  },
   password: { type: String, required: true, maxlength:[20,'Password cannot be more than 20'] },
   name: {
     type: userNameSchema,
@@ -130,12 +136,7 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
     required: true,
   },
   profileImg: { type: String },
-  isActive: {
-    type: String,
-    enum: ['active', 'blocked'],
-    message: '{VALUE} is not a valid image',
-    default: 'active',
-  },
+
   isDeleted:{
     type: Boolean,
     default: false,
@@ -193,3 +194,26 @@ studentSchema.methods.isUserExists = async function (id: string) {
 };
 
 export const Student = model<TStudent, StudentModel>('Student', studentSchema);
+
+export const calculateTotalPriceController = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const totalPrice = await calculateTotalPrice(Number(userId));
+
+    res.status(200).json({
+      success: true,
+      message: 'Total price calculated successfully!',
+      data: { totalPrice },
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to calculate total price',
+      error: error.message || 'Failed to calculate total price',
+    });
+  }
+};
+
+
+
+
