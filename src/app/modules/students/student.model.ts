@@ -10,8 +10,7 @@ import {
   TUserName,
 } from './student.interface';
 
-import config from '../../config';
-import bcrypt from 'bcrypt';
+
 
 const userNameSchema = new Schema<TUserName>({
   firstName: {
@@ -94,9 +93,9 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
    type:Schema.Types.ObjectId,
    required:[true,'User Id is required'],
    unique:true,
-   ref:"User"
+   ref:'User'
   },
-  password: { type: String, required: true, maxlength:[20,'Password cannot be more than 20'] },
+
   name: {
     type: userNameSchema,
     required: true,
@@ -109,7 +108,7 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
     },
     required: true,
   },
-  dateOfBirth: { type: String },
+  dateOfBirth: { type: Date },
   email: {
     type: String,
     required: true,
@@ -136,6 +135,10 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
     required: true,
   },
   profileImg: { type: String },
+  admissionSemester:{
+    type: Schema.Types.ObjectId,
+    ref:'AcademicSemister'
+  },
 
   isDeleted:{
     type: Boolean,
@@ -152,21 +155,6 @@ studentSchema.virtual('fullName').get(function (){
   return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`
 })
 
-// pre save middleware/hook, will work on create() save
-studentSchema.pre('save', async function (next) {
-  //console.log(this, 'it will save');
-  // hashing password saved
-  // eslint-disable-next-line @typescript-eslint/no-this-alias
-  const user=this;
-  user.password=await bcrypt.hash(user.password,Number(config.bcrypt_salt_round));
-  next()
-
-});
-// post save middleware/hook, 
-studentSchema.post('save', function (doc,next) {
- doc.password='';
- next()
-});
 
 // query Middleware
 studentSchema.pre('find',function(next){
@@ -194,26 +182,6 @@ studentSchema.methods.isUserExists = async function (id: string) {
 };
 
 export const Student = model<TStudent, StudentModel>('Student', studentSchema);
-
-export const calculateTotalPriceController = async (req: Request, res: Response) => {
-  try {
-    const { userId } = req.params;
-    const totalPrice = await calculateTotalPrice(Number(userId));
-
-    res.status(200).json({
-      success: true,
-      message: 'Total price calculated successfully!',
-      data: { totalPrice },
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to calculate total price',
-      error: error.message || 'Failed to calculate total price',
-    });
-  }
-};
-
 
 
 

@@ -1,7 +1,11 @@
+import {  RequestHandler } from "express";
 import { UserService } from "./user.service";
+import { sendResponse } from "../../utils/sendResponse";
+import  httpStatus  from 'http-status';
+import { catchAsync } from "../../utils/catchAsync";
 
-const createStudent = async (req: Request, res: Response) => {
-    try {
+const createStudent:RequestHandler = catchAsync(async (req, res) => {
+    
   
       // create joi schema validation
      
@@ -23,16 +27,21 @@ const createStudent = async (req: Request, res: Response) => {
       
       
       // send response
-      res.status(200).json({
-        success: true,
+      // res.status(200).json({
+      //   success: true,
+      //   message: 'Student created successfully',
+      //   data: result,
+      // });
+
+      sendResponse(res,{
+        statusCode:httpStatus.OK,
+        success:true,
         message: 'Student created successfully',
-        data: result,
+        data: result
       });
-    } catch (err:any) {
-       res.status(500).json({
-        success: false,
-        message: err.message||'Something went wrong',
-        error:err,
-      });
-    }
-  };
+    
+  })
+
+export const UserController={
+  createStudent,
+}
