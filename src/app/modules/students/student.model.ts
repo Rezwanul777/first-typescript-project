@@ -143,6 +143,10 @@ const studentSchema = new Schema<TStudent, StudentModel, StudentMethods>({
   isDeleted:{
     type: Boolean,
     default: false,
+  },
+  academicDepartment:{
+    type: Schema.Types.ObjectId,
+    ref:'AcademicDepartment'
   }
 },{
   toJSON:{

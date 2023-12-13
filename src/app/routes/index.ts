@@ -7,6 +7,10 @@ import { StudentRoutes } from "../modules/students/student.route";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { UseRoutes } from "../modules/user/user.route";
 import { AcademicSemesterRoutes } from "../modules/academic/academicSemister.route";
+import { AcademicFacultyRoutes } from "../modules/academicFaculty/academicFaculty.route";
+import { AcademicDepartmentRoutes } from "../modules/academicDepartment/academicDepartment.routes";
+
+
 
 
 const router=Router()
@@ -30,6 +34,8 @@ const router=Router()
 router.use('/students',StudentRoutes)
 router.use('/users',UseRoutes)
 router.use('/academicSemesters',AcademicSemesterRoutes)
+router.use('/academic-faculty',AcademicFacultyRoutes)
+router.use('/academic-department',AcademicDepartmentRoutes)
 
 //moduleRoutes.forEach(route =>router.use(route.path,route.route))
 

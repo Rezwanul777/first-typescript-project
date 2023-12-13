@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prefer-const */
 // year semester code 4 digit 
 
@@ -27,8 +29,21 @@ const findLastStudentId = async () => {
   export const generateStudentId = async (payload: TAcademictpeSemister) => {
     // first time 0000
     //0001  => 1
-    const currentId = (await findLastStudentId()) || (0).toString();
-  
+    let currentId =  (0).toString();// 0000 by default
+    const lastStudentId = await findLastStudentId()
+
+    // 2030 01 0001
+
+    const lastStudentSemesterCode= lastStudentId?.substring(4,6) //01
+    const lastStudentYear= lastStudentId?.substring(0,4)  // 2030
+
+    const currentSemesterCode= payload.code
+    const currentStudentYear= payload.year
+
+    if(lastStudentId && lastStudentSemesterCode === currentSemesterCode && lastStudentYear === currentStudentYear){
+      currentId = lastStudentId.substring(6) //0001
+    }
+
     let incrementId = (Number(currentId) + 1).toString().padStart(4, '0');
   
     incrementId = `${payload.year}${payload.code}${incrementId}`;
