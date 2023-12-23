@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import mongoose from "mongoose";
 import config from "../../config";
 import { AcademicSemister } from "../academic/academicSemister.model";
 
@@ -6,6 +8,8 @@ import { Student } from "../students/student.model";
 import {  TUser } from "./user.interface";
 import { User } from "./user.model";
 import { generateStudentId } from "./user.utils";
+import AppError from "../../errors/error";
+import httpStatus from "http-status";
 
 
 const createStudentIntoDB = async (password:string, payload: TStudent) => {
@@ -24,21 +28,48 @@ const createStudentIntoDB = async (password:string, payload: TStudent) => {
   // find admission info
   const admisionSemester= await AcademicSemister.findById(payload.admissionSemester) 
 
- // set generated Id
-  userData.id = await generateStudentId(admisionSemester)
+    // transaction rollback
+    const session= await mongoose.startSession()
+  try {
+    // start transaction
+    session.startTransaction()
+    userData.id = await generateStudentId(admisionSemester)
 
-  // create user
-  const newUser = await User.create(userData);
+  // create user(transaction-1)
+  const newUser = await User.create([userData],{session}); // array create
     
 // create student
-if (Object.keys(newUser).length) {
-  // set id , _id as user
-  payload.id = newUser.id;
-  payload.user = newUser._id; //reference _id
+if (!newUser.length) {
 
-  const newStudent = await Student.create(payload);
-  return newStudent;
+  throw new AppError(httpStatus.BAD_REQUEST,"Failed to create user")
 }
+
+// set generated Id
+
+  payload.id = newUser[0].id; // cause if we clg newuser we get id in  zero no index 
+  payload.user = newUser[0]._id; //reference _id
+
+   // create student(transaction-2)
+  const newStudent = await Student.create([payload],{session});
+
+  if(!newStudent.length){
+    throw new AppError(httpStatus.BAD_REQUEST,"Failed to create student")
+  }
+
+  //if suuccess all sesion create user and student then commit for parmanent saving in datadase.
+  await session.commitTransaction()
+  // then seesion end
+  await session.endSession()
+  return newStudent;
+
+  } catch (err: any) {
+    // if all session failed
+    await session.abortTransaction()
+    await session.endSession()
+    throw new Error(err)
+  }
+ 
+  
 };
   export const UserService={
     createStudentIntoDB
