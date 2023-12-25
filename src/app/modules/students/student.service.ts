@@ -95,7 +95,7 @@ const getAllStudentfromDB = async (query:Record<string,unknown>) => {
 const getSingleStudentfromDB = async (id: string) => {
   //const result = await Student.findOne({ id });
 
-  const result = await Student.findOne({ id })
+  const result = await Student.findById( id )
   .populate('admissionSemester')
   .populate({
     path: 'academicDepartment', // Populate the academicDepartment field
@@ -140,7 +140,7 @@ if (localGuardian && Object.keys(localGuardian).length) {
 
 
 
-const result = await Student.findOneAndUpdate({id}, modifiedUpdatedData, {
+const result = await Student.findByIdAndUpdate(id, modifiedUpdatedData, {
   new: true,
   runValidators: true,
 });
@@ -157,13 +157,18 @@ const deleteStudentfromDB = async (id: string) => {
 
   try {
     session.startTransaction()
-    const deletedStudent = await Student.findOneAndUpdate({ id },{isDeleted: true},{new:true,session}); // update our generated id , so we use findOneAndUpdate
+    const deletedStudent = await Student.findByIdAndUpdate(id,{isDeleted: true},{new:true,session}); // update our generated id , so we use findOneAndUpdate
 
     if(!deletedStudent){
       throw new AppError(httpStatus.BAD_REQUEST,'Failed to delete student')
     }
 
-    const deltedUser= await User.findOneAndUpdate({ id },{isDeleted: true},{new:true,session}); // update our generated id , so we use findOneAndUpdate
+    // get user _id from deletedstudent
+    const userId = deletedStudent.user;
+
+    const deltedUser= await User.findByIdAndUpdate(userId,{isDeleted: true},{new:true,session}); // update our generated id , so we use findOneAndUpdate
+
+
 
     if(!deltedUser){
       throw new AppError(httpStatus.BAD_REQUEST,'Failed to delete user')
